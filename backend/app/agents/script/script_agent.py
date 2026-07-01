@@ -5,7 +5,7 @@ from typing import Any
 from app.agents.base.agent_context import AgentContext
 from app.agents.base.agent_result import AgentResult
 from app.agents.base.base_agent import BaseAgent
-from app.services.script.script_generator import generate_script
+from app.services.script.ai_script_generator import generate_ai_script
 
 
 class ScriptAgent(BaseAgent):
@@ -28,7 +28,7 @@ class ScriptAgent(BaseAgent):
                 execution_time_ms=0.0,
             )
 
-        script_package = generate_script(brief)
+        script_package = generate_ai_script(brief)
 
         return AgentResult(
             success=True,
