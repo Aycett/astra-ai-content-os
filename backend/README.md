@@ -204,6 +204,16 @@ python -c "from uuid import uuid4; from app.agents import AgentContext, Research
 
 **Windows (PowerShell):** use the same command.
 
+### Scene plan generator
+
+Convert a `ScriptPackage` into a `ScenePlan`:
+
+```bash
+python -c "from uuid import uuid4; from app.agents import AgentContext, ResearchAgent, ScriptAgent; from app.services.planning import generate_briefs; from app.services.scene import generate_scene_plan; ctx = AgentContext(request_id=uuid4(), topic='AI productivity tools'); research = ResearchAgent().run(ctx); briefs = generate_briefs(research.data['candidates'], topic='AI productivity tools'); script = ScriptAgent().run(AgentContext(request_id=ctx.request_id, metadata={'brief': briefs[0].model_dump(mode='json')})); plan = generate_scene_plan(script.data['script']); print(plan.model_dump_json(indent=2))"
+```
+
+**Windows (PowerShell):** use the same command.
+
 ## Health check
 
 **URL:** `GET http://localhost:8000/health`
@@ -243,6 +253,6 @@ backend/
 
 ## Scope
 
-**Implemented:** API shell, health endpoint, typed configuration, Docker Compose infrastructure, agent framework, research provider framework, Tavily research provider, trend scoring v0.1, trend candidate generator, content brief generator, script package generator, ScriptAgent, voice package generator, VoiceAgent.
+**Implemented:** API shell, health endpoint, typed configuration, Docker Compose infrastructure, agent framework, research provider framework, Tavily research provider, trend scoring v0.1, trend candidate generator, content brief generator, script package generator, ScriptAgent, voice package generator, VoiceAgent, scene plan generator.
 
 **Not yet implemented:** Database models, migrations, Redis clients, authentication, AI providers, publishing.
