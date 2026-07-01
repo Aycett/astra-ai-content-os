@@ -8,6 +8,7 @@ from app.services.research.base_provider import BaseResearchProvider
 from app.services.research.mock_provider import MockResearchProvider
 from app.services.research.models import ResearchQuery
 from app.services.research.provider_manager import ResearchProviderManager
+from app.services.research.scoring import score_sources
 from app.services.research.tavily_provider import TavilyProvider
 
 
@@ -53,6 +54,10 @@ class ResearchAgent(BaseAgent):
             metadata=context.metadata,
         )
         research_result = self._provider_manager.search(research_query)
+
+        if research_result.sources:
+            scored_sources = score_sources(research_result.sources, research_query.query)
+            research_result = research_result.model_copy(update={"sources": scored_sources})
 
         if not research_result.sources:
             return AgentResult(

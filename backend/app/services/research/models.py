@@ -21,7 +21,7 @@ class ResearchSource(BaseModel):
         default=None,
         ge=0,
         le=1,
-        description="Relevance score between 0 and 1 when available.",
+        description="Trend relevance score between 0 and 1, assigned by trend scoring.",
     )
 
 

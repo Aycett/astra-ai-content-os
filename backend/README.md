@@ -139,6 +139,17 @@ python -c "from uuid import uuid4; from app.agents import AgentContext, Research
 
 Check `data.research.provider_used` in the output — `tavily` means live results, `mock` means fallback was used.
 
+Each source includes a `score` field (0–1) from deterministic trend scoring, sorted highest first:
+
+| Rule | Points |
+|------|--------|
+| Base score | +0.1 |
+| Has URL | +0.2 |
+| Query words in title | +0.4 |
+| Query words in snippet | +0.3 |
+
+Maximum score is capped at 1.0.
+
 ## Health check
 
 **URL:** `GET http://localhost:8000/health`
@@ -178,6 +189,6 @@ backend/
 
 ## Scope
 
-**Implemented:** API shell, health endpoint, typed configuration, Docker Compose infrastructure, agent framework, research provider framework, Tavily research provider.
+**Implemented:** API shell, health endpoint, typed configuration, Docker Compose infrastructure, agent framework, research provider framework, Tavily research provider, trend scoring v0.1.
 
 **Not yet implemented:** Database models, migrations, Redis clients, authentication, AI providers, publishing.
