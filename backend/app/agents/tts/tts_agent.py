@@ -5,7 +5,9 @@ from typing import Any
 from app.agents.base.agent_context import AgentContext
 from app.agents.base.agent_result import AgentResult
 from app.agents.base.base_agent import BaseAgent
-from app.services.tts import MockTTSProvider, TTSRequest
+from app.core.config import get_settings
+from app.services.tts import ElevenLabsProvider, MockTTSProvider, TTSRequest
+from app.services.tts.models import TTSResponse
 from app.services.voice.models import VoicePackage
 
 
@@ -13,7 +15,7 @@ class TTSAgent(BaseAgent):
     """Generates a TTS response from a voice package in agent context."""
 
     def __init__(self, tts_provider: MockTTSProvider | None = None) -> None:
-        self._tts_provider = tts_provider or MockTTSProvider()
+        self._tts_provider = tts_provider
 
     @property
     def name(self) -> str:
@@ -22,6 +24,18 @@ class TTSAgent(BaseAgent):
     @property
     def version(self) -> str:
         return "0.1.0"
+
+    def _generate_tts_response(self, request: TTSRequest) -> TTSResponse:
+        if self._tts_provider is not None:
+            return self._tts_provider.generate(request)
+
+        if get_settings().elevenlabs_api_key:
+            try:
+                return ElevenLabsProvider().generate(request)
+            except Exception:
+                return MockTTSProvider().generate(request)
+
+        return MockTTSProvider().generate(request)
 
     def _execute(self, context: AgentContext) -> AgentResult:
         voice: Any = context.metadata.get("voice")
@@ -41,7 +55,7 @@ class TTSAgent(BaseAgent):
             voice_profile=voice_package.voice_profile,
             metadata=voice_package.metadata,
         )
-        tts_response = self._tts_provider.generate(tts_request)
+        tts_response = self._generate_tts_response(tts_request)
 
         return AgentResult(
             success=True,

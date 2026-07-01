@@ -2,7 +2,9 @@
 
 from typing import Any
 
-from app.services.llm import LLMRequest, MockLLMProvider
+from app.core.config import get_settings
+from app.services.llm import LLMRequest, MockLLMProvider, OpenAIProvider
+from app.services.llm.models import LLMResponse
 from app.services.planning.models import ContentBrief
 from app.services.script.models import ScriptPackage
 
@@ -77,15 +79,30 @@ def _build_call_to_action(brief: ContentBrief) -> str:
     return f"Follow for more {brief.topic} breakdowns."
 
 
+def _generate_llm_response(
+    request: LLMRequest,
+    llm_provider: MockLLMProvider | None = None,
+) -> LLMResponse:
+    if llm_provider is not None:
+        return llm_provider.generate(request)
+
+    if get_settings().openai_api_key:
+        try:
+            return OpenAIProvider().generate(request)
+        except Exception:
+            return MockLLMProvider().generate(request)
+
+    return MockLLMProvider().generate(request)
+
+
 def generate_ai_script(
     brief: ContentBrief | dict[str, Any],
     llm_provider: MockLLMProvider | None = None,
 ) -> ScriptPackage:
-    """Convert a content brief into a script package via the mock LLM gateway."""
+    """Convert a content brief into a script package via the LLM gateway."""
     normalized = _to_content_brief(brief)
-    provider = llm_provider or MockLLMProvider()
 
-    llm_response = provider.generate(
+    llm_response = _generate_llm_response(
         LLMRequest(
             prompt=_build_prompt(normalized),
             system_prompt=_build_system_prompt(normalized),
@@ -93,7 +110,8 @@ def generate_ai_script(
                 "topic": normalized.topic,
                 "duration_seconds": normalized.duration_seconds,
             },
-        )
+        ),
+        llm_provider=llm_provider,
     )
 
     return ScriptPackage(
@@ -111,7 +129,7 @@ def generate_ai_script(
             "tone": normalized.tone,
             "target_platforms": normalized.target_platforms,
             "brief_status": normalized.status,
-            "generator": "ai_mock",
+            "generator": "ai_openai" if llm_response.provider == "openai" else "ai_mock",
             "llm_provider": llm_response.provider,
             "llm_model": llm_response.model,
         },

@@ -57,10 +57,34 @@ class Settings(BaseSettings):
     redis_url: str = Field(default="redis://localhost:6379/0")
 
     tavily_api_key: str | None = Field(default=None)
+    openai_api_key: str | None = Field(default=None)
+    elevenlabs_api_key: str | None = Field(default=None)
+    elevenlabs_voice_id: str | None = Field(default=None)
 
     @field_validator("tavily_api_key", mode="before")
     @classmethod
     def empty_tavily_api_key_as_none(cls, value: object) -> object:
+        if isinstance(value, str) and value.strip() == "":
+            return None
+        return value
+
+    @field_validator("openai_api_key", mode="before")
+    @classmethod
+    def empty_openai_api_key_as_none(cls, value: object) -> object:
+        if isinstance(value, str) and value.strip() == "":
+            return None
+        return value
+
+    @field_validator("elevenlabs_api_key", mode="before")
+    @classmethod
+    def empty_elevenlabs_api_key_as_none(cls, value: object) -> object:
+        if isinstance(value, str) and value.strip() == "":
+            return None
+        return value
+
+    @field_validator("elevenlabs_voice_id", mode="before")
+    @classmethod
+    def empty_elevenlabs_voice_id_as_none(cls, value: object) -> object:
         if isinstance(value, str) and value.strip() == "":
             return None
         return value
