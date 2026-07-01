@@ -154,6 +154,16 @@ Maximum score is capped at 1.0.
 
 After scoring, `ResearchAgent` returns `data.candidates` — up to 5 `TrendCandidate` objects with video-friendly titles, angles, source references, and reasoning. No AI provider is used.
 
+### Content brief generator
+
+Convert trend candidates into `ContentBrief` objects:
+
+```bash
+python -c "from uuid import uuid4; from app.agents import AgentContext, ResearchAgent; from app.services.planning import generate_briefs; from app.services.research.models import TrendCandidate; ctx = AgentContext(request_id=uuid4(), topic='AI productivity tools'); research = ResearchAgent().run(ctx); candidates = [TrendCandidate.model_validate(c) for c in research.data['candidates']]; briefs = generate_briefs(candidates, topic='AI productivity tools'); print(briefs[0].model_dump_json(indent=2))"
+```
+
+**Windows (PowerShell):** use the same command.
+
 ## Health check
 
 **URL:** `GET http://localhost:8000/health`
@@ -193,6 +203,6 @@ backend/
 
 ## Scope
 
-**Implemented:** API shell, health endpoint, typed configuration, Docker Compose infrastructure, agent framework, research provider framework, Tavily research provider, trend scoring v0.1, trend candidate generator.
+**Implemented:** API shell, health endpoint, typed configuration, Docker Compose infrastructure, agent framework, research provider framework, Tavily research provider, trend scoring v0.1, trend candidate generator, content brief generator.
 
 **Not yet implemented:** Database models, migrations, Redis clients, authentication, AI providers, publishing.
