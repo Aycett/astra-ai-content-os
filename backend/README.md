@@ -13,19 +13,23 @@ For Docker-based runs: Docker and Docker Compose.
 
 ## Configuration
 
-Copy the environment template from the repository root:
+The project uses a **single** environment file at the repository root:
 
-```bash
-cp ../.env.example .env
+```
+astra-ai-content-os/.env
 ```
 
-Or for Docker Compose, copy to the repository root:
+Create it from the template:
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and set `POSTGRES_PASSWORD` and connection URLs. Never commit `.env` to version control.
+Run this from the repository root (`astra-ai-content-os/`). Do not create `backend/.env`.
+
+The backend loads this file automatically regardless of your current working directory. Docker Compose also reads the same root `.env`.
+
+Edit `.env` and set `POSTGRES_PASSWORD` and other values as needed. Never commit `.env` to version control.
 
 | Variable | Purpose |
 |----------|---------|
@@ -33,6 +37,7 @@ Edit `.env` and set `POSTGRES_PASSWORD` and connection URLs. Never commit `.env`
 | `REDIS_URL` | Redis connection string |
 | `POSTGRES_*` | PostgreSQL credentials and port (used by Docker Compose) |
 | `REDIS_PORT` | Redis host port mapping for Docker Compose |
+| `TAVILY_API_KEY` | Optional Tavily Search API key for live research |
 
 ## Run locally (without Docker)
 
@@ -98,7 +103,11 @@ docker compose down
 
 ## Run ResearchAgent locally
 
-From the `backend/` directory with the virtual environment activated:
+From the `backend/` directory with the virtual environment activated.
+
+### Mock provider (no API key)
+
+Leave `TAVILY_API_KEY` empty. Research falls back to `MockResearchProvider`.
 
 ```bash
 python -c "from uuid import uuid4; from app.agents import AgentContext, ResearchAgent; ctx = AgentContext(request_id=uuid4(), topic='AI productivity tools'); result = ResearchAgent().run(ctx); print(result.model_dump_json(indent=2))"
@@ -109,6 +118,26 @@ python -c "from uuid import uuid4; from app.agents import AgentContext, Research
 ```powershell
 python -c "from uuid import uuid4; from app.agents import AgentContext, ResearchAgent; ctx = AgentContext(request_id=uuid4(), topic='AI productivity tools'); result = ResearchAgent().run(ctx); print(result.model_dump_json(indent=2))"
 ```
+
+### Tavily provider
+
+1. Sign up at [tavily.com](https://tavily.com) and create an API key.
+2. Add the key to the repository root `.env`:
+
+```bash
+TAVILY_API_KEY=tvly-your-key-here
+```
+
+3. Run the same test command. Provider order is:
+
+   1. `TavilyProvider` (live search)
+   2. `MockResearchProvider` (fallback if Tavily fails or returns no results)
+
+```bash
+python -c "from uuid import uuid4; from app.agents import AgentContext, ResearchAgent; ctx = AgentContext(request_id=uuid4(), topic='AI productivity tools'); result = ResearchAgent().run(ctx); print(result.model_dump_json(indent=2))"
+```
+
+Check `data.research.provider_used` in the output — `tavily` means live results, `mock` means fallback was used.
 
 ## Health check
 
@@ -149,6 +178,6 @@ backend/
 
 ## Scope
 
-**Implemented:** API shell, health endpoint, typed configuration, Docker Compose infrastructure, agent framework, research provider framework.
+**Implemented:** API shell, health endpoint, typed configuration, Docker Compose infrastructure, agent framework, research provider framework, Tavily research provider.
 
-**Not yet implemented:** Database models, migrations, Redis clients, real research APIs, authentication, AI providers, publishing.
+**Not yet implemented:** Database models, migrations, Redis clients, authentication, AI providers, publishing.

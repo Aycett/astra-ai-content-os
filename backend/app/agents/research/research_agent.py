@@ -3,9 +3,23 @@
 from app.agents.base.agent_context import AgentContext
 from app.agents.base.agent_result import AgentResult
 from app.agents.base.base_agent import BaseAgent
+from app.core.config import get_settings
+from app.services.research.base_provider import BaseResearchProvider
 from app.services.research.mock_provider import MockResearchProvider
 from app.services.research.models import ResearchQuery
 from app.services.research.provider_manager import ResearchProviderManager
+from app.services.research.tavily_provider import TavilyProvider
+
+
+def _default_provider_manager() -> ResearchProviderManager:
+    settings = get_settings()
+    providers: list[BaseResearchProvider] = []
+
+    if settings.tavily_api_key:
+        providers.append(TavilyProvider(api_key=settings.tavily_api_key))
+
+    providers.append(MockResearchProvider())
+    return ResearchProviderManager(providers=providers)
 
 
 class ResearchAgent(BaseAgent):
@@ -15,9 +29,7 @@ class ResearchAgent(BaseAgent):
         self,
         provider_manager: ResearchProviderManager | None = None,
     ) -> None:
-        self._provider_manager = provider_manager or ResearchProviderManager(
-            providers=[MockResearchProvider()],
-        )
+        self._provider_manager = provider_manager or _default_provider_manager()
 
     @property
     def name(self) -> str:

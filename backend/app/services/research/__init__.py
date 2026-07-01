@@ -8,6 +8,7 @@ from app.services.research.models import (
     ResearchSource,
 )
 from app.services.research.provider_manager import ResearchProviderManager
+from app.services.research.tavily_provider import TavilyProvider
 
 __all__ = [
     "BaseResearchProvider",
@@ -16,4 +17,5 @@ __all__ = [
     "ResearchQuery",
     "ResearchResult",
     "ResearchSource",
+    "TavilyProvider",
 ]

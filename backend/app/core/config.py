@@ -1,6 +1,7 @@
 """Application configuration loaded from environment variables."""
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, PostgresDsn, field_validator
@@ -8,12 +9,32 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 EnvironmentName = Literal["local", "development", "staging", "production"]
 
+_PROJECT_ROOT_MARKERS = ("MASTER_CONTEXT.md", "docker-compose.yml", ".env.example")
+
+
+def find_project_root() -> Path:
+    """Locate the repository root using known marker files."""
+    start = Path(__file__).resolve().parent
+    for directory in (start, *start.parents):
+        if any((directory / marker).exists() for marker in _PROJECT_ROOT_MARKERS):
+            return directory
+    return Path(__file__).resolve().parents[3]
+
+
+def resolve_root_env_file() -> Path | None:
+    """Return the repository root .env path when the file exists."""
+    env_file = find_project_root() / ".env"
+    return env_file if env_file.is_file() else None
+
+
+_ROOT_ENV_FILE = resolve_root_env_file()
+
 
 class Settings(BaseSettings):
     """Validated application settings sourced from the environment."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(_ROOT_ENV_FILE) if _ROOT_ENV_FILE else None,
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -34,6 +55,15 @@ class Settings(BaseSettings):
 
     redis_port: int = Field(default=6379)
     redis_url: str = Field(default="redis://localhost:6379/0")
+
+    tavily_api_key: str | None = Field(default=None)
+
+    @field_validator("tavily_api_key", mode="before")
+    @classmethod
+    def empty_tavily_api_key_as_none(cls, value: object) -> object:
+        if isinstance(value, str) and value.strip() == "":
+            return None
+        return value
 
     @field_validator("database_url", mode="before")
     @classmethod
