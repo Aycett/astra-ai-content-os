@@ -96,6 +96,20 @@ Stop services:
 docker compose down
 ```
 
+## Run ResearchAgent locally
+
+From the `backend/` directory with the virtual environment activated:
+
+```bash
+python -c "from uuid import uuid4; from app.agents import AgentContext, ResearchAgent; ctx = AgentContext(request_id=uuid4(), topic='AI productivity tools'); result = ResearchAgent().run(ctx); print(result.model_dump_json(indent=2))"
+```
+
+**Windows (PowerShell):**
+
+```powershell
+python -c "from uuid import uuid4; from app.agents import AgentContext, ResearchAgent; ctx = AgentContext(request_id=uuid4(), topic='AI productivity tools'); result = ResearchAgent().run(ctx); print(result.model_dump_json(indent=2))"
+```
+
 ## Health check
 
 **URL:** `GET http://localhost:8000/health`
@@ -125,6 +139,8 @@ backend/
 │   ├── main.py           # FastAPI app factory
 │   ├── api/routes/       # HTTP route handlers
 │   ├── core/             # Configuration and shared infrastructure
+│   ├── agents/           # Domain agents (research, script, etc.)
+│   ├── services/         # Service layer (research providers, etc.)
 │   └── schemas/          # Pydantic request/response models
 ├── requirements.txt
 ├── .dockerignore
@@ -133,6 +149,6 @@ backend/
 
 ## Scope
 
-**Implemented:** API shell, health endpoint, typed configuration, Docker Compose infrastructure.
+**Implemented:** API shell, health endpoint, typed configuration, Docker Compose infrastructure, agent framework, research provider framework.
 
-**Not yet implemented:** Database models, migrations, Redis clients, agents, authentication, AI providers, publishing.
+**Not yet implemented:** Database models, migrations, Redis clients, real research APIs, authentication, AI providers, publishing.
