@@ -150,6 +150,10 @@ Each source includes a `score` field (0–1) from deterministic trend scoring, s
 
 Maximum score is capped at 1.0.
 
+### Trend candidates
+
+After scoring, `ResearchAgent` returns `data.candidates` — up to 5 `TrendCandidate` objects with video-friendly titles, angles, source references, and reasoning. No AI provider is used.
+
 ## Health check
 
 **URL:** `GET http://localhost:8000/health`
@@ -189,6 +193,6 @@ backend/
 
 ## Scope
 
-**Implemented:** API shell, health endpoint, typed configuration, Docker Compose infrastructure, agent framework, research provider framework, Tavily research provider, trend scoring v0.1.
+**Implemented:** API shell, health endpoint, typed configuration, Docker Compose infrastructure, agent framework, research provider framework, Tavily research provider, trend scoring v0.1, trend candidate generator.
 
 **Not yet implemented:** Database models, migrations, Redis clients, authentication, AI providers, publishing.

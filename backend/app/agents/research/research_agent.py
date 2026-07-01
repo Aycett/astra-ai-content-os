@@ -6,6 +6,7 @@ from app.agents.base.base_agent import BaseAgent
 from app.core.config import get_settings
 from app.services.research.base_provider import BaseResearchProvider
 from app.services.research.mock_provider import MockResearchProvider
+from app.services.research.candidate_generator import generate_candidates
 from app.services.research.models import ResearchQuery
 from app.services.research.provider_manager import ResearchProviderManager
 from app.services.research.scoring import score_sources
@@ -62,15 +63,23 @@ class ResearchAgent(BaseAgent):
         if not research_result.sources:
             return AgentResult(
                 success=False,
-                data={"research": research_result.model_dump(mode="json")},
+                data={
+                    "research": research_result.model_dump(mode="json"),
+                    "candidates": [],
+                },
                 warnings=research_result.warnings,
                 errors=research_result.errors,
                 execution_time_ms=0.0,
             )
 
+        candidates = generate_candidates(research_result.sources, research_query.query)
+
         return AgentResult(
             success=True,
-            data={"research": research_result.model_dump(mode="json")},
+            data={
+                "research": research_result.model_dump(mode="json"),
+                "candidates": [candidate.model_dump(mode="json") for candidate in candidates],
+            },
             warnings=research_result.warnings,
             errors=research_result.errors,
             execution_time_ms=0.0,

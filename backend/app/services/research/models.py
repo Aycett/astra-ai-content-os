@@ -54,3 +54,18 @@ class ResearchResult(BaseModel):
         default_factory=list,
         description="Errors encountered during the search.",
     )
+
+
+class TrendCandidate(BaseModel):
+    """A short-form video trend opportunity derived from a research source."""
+
+    title: str = Field(description="Short, video-friendly title for the content idea.")
+    angle: str = Field(description="How this topic could become a short video.")
+    source_url: str = Field(description="URL of the originating research source.")
+    source_title: str = Field(description="Title of the originating research source.")
+    score: float = Field(ge=0, le=1, description="Trend relevance score from research.")
+    platform_fit: str = Field(
+        default="short_video",
+        description="Target content format for this candidate.",
+    )
+    reasoning: str = Field(description="Deterministic explanation for candidate selection.")
