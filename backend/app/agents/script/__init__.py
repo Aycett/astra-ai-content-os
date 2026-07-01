@@ -1,1 +1,5 @@
-"""Script agent package — narration, hooks, and metadata generation."""
+"""Script agent package."""
+
+from app.agents.script.script_agent import ScriptAgent
+
+__all__ = ["ScriptAgent"]
